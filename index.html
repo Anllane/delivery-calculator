@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Калькулятор стоимости доставки</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--primary:#3b82f6;--primary-hover:#2563eb;--bg:#ffffff;--card:#f9fafb;--border:#e5e7eb;--text:#111827;--muted:#6b7280;--font:'Inter',sans-serif;--radius:12px}
+body{font-family:var(--font);background:#f3f4f6;display:flex;justify-content:center;padding:40px 16px;color:var(--text)}
+.calc{width:100%;max-width:480px;background:var(--bg);border-radius:20px;box-shadow:0 4px 24px rgba(0,0,0,.08);overflow:hidden}
+.calc-header{background:linear-gradient(135deg,#3b82f6,#2563eb);padding:28px 28px 24px;color:#fff}
+.calc-header h2{font-size:22px;font-weight:700;margin-bottom:4px}
+.calc-header p{font-size:13px;opacity:.85}
+.calc-body{padding:24px 28px 28px;display:flex;flex-direction:column;gap:20px}
+
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:13px;font-weight:600;color:var(--text)}
+.select{width:100%;padding:12px 14px;border:2px solid var(--border);border-radius:var(--radius);font-family:var(--font);font-size:14px;color:var(--text);outline:none;background:var(--bg);cursor:pointer;transition:border-color .2s;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
+.select:focus{border-color:var(--primary)}
+
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+.slider-value{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+.slider-value .val{font-size:24px;font-weight:700;color:var(--primary)}
+.slider-value .unit{font-size:14px;color:var(--muted)}
+input[type=range]{-webkit-appearance:none;width:100%;height:6px;border-radius:3px;background:#e5e7eb;outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--primary);cursor:pointer;box-shadow:0 2px 6px rgba(59,130,246,.3)}
+input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--primary);cursor:pointer;border:none}
+.range-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:4px}
+
+.options{display:flex;gap:8px}
+.opt{flex:1;padding:14px 8px;border:2px solid var(--border);border-radius:var(--radius);text-align:center;cursor:pointer;transition:all .2s;background:var(--bg)}
+.opt:hover{border-color:#d1d5db}
+.opt.active{border-color:var(--primary);background:rgba(59,130,246,.05)}
+.opt-icon{font-size:20px;margin-bottom:4px}
+.opt-name{font-size:12px;font-weight:600;color:var(--text)}
+.opt.active .opt-name{color:var(--primary)}
+.opt-time{font-size:10px;color:var(--muted);margin-top:2px}
+
+.dims{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.dim-input{padding:10px;border:2px solid var(--border);border-radius:var(--radius);font-family:var(--font);font-size:14px;text-align:center;outline:none;width:100%;color:var(--text);transition:border-color .2s}
+.dim-input:focus{border-color:var(--primary)}
+.dim-label{font-size:10px;color:var(--muted);text-align:center;margin-top:3px}
+
+.toggles{display:flex;flex-direction:column;gap:8px}
+.toggle{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;transition:all .2s}
+.toggle:hover{border-color:#d1d5db}
+.toggle.active{border-color:var(--primary);background:rgba(59,130,246,.04)}
+.toggle-label{font-size:13px;font-weight:500}
+.toggle-price{font-size:12px;color:var(--muted)}
+.toggle.active .toggle-price{color:var(--primary)}
+.toggle-check{width:20px;height:20px;border:2px solid var(--border);border-radius:6px;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
+.toggle.active .toggle-check{background:var(--primary);border-color:var(--primary)}
+.toggle.active .toggle-check::after{content:'✓';color:#fff;font-size:12px;font-weight:700}
+
+.divider{height:1px;background:var(--border)}
+
+.result{background:linear-gradient(135deg,rgba(59,130,246,.06),rgba(59,130,246,.02));border:1px solid rgba(59,130,246,.15);border-radius:16px;padding:20px;text-align:center}
+.result-label{font-size:12px;color:var(--muted);margin-bottom:4px}
+.result-price{font-size:36px;font-weight:700;color:var(--primary)}
+.result-price small{font-size:16px;color:var(--muted);font-weight:400}
+.result-details{display:flex;justify-content:center;gap:20px;margin-top:12px;font-size:12px;color:var(--muted)}
+.result-details span{display:flex;flex-direction:column;align-items:center;gap:2px}
+.result-details .rd-val{font-weight:600;color:var(--text);font-size:13px}
+
+.btn{width:100%;padding:16px;background:var(--primary);color:#fff;border:none;border-radius:var(--radius);font-family:var(--font);font-size:15px;font-weight:600;cursor:pointer;transition:all .2s}
+.btn:hover{background:var(--primary-hover);transform:translateY(-1px);box-shadow:0 4px 16px rgba(59,130,246,.3)}
+@media(max-width:500px){.calc-body{padding:20px}.options{flex-direction:column}.row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="calc">
+  <div class="calc-header">
+    <h2>Калькулятор доставки</h2>
+    <p>Рассчитайте стоимость по вашим параметрам</p>
+  </div>
+  <div class="calc-body">
+
+    <div class="row">
+      <div class="field">
+        <label>Откуда</label>
+        <select class="select" id="from" onchange="update()">
+          <option value="moscow">Москва</option>
+          <option value="spb">Санкт-Петербург</option>
+          <option value="ekb">Екатеринбург</option>
+          <option value="nsk">Новосибирск</option>
+          <option value="kzn">Казань</option>
+          <option value="nnov">Нижний Новгород</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Куда</label>
+        <select class="select" id="to" onchange="update()">
+          <option value="moscow">Москва</option>
+          <option value="spb" selected>Санкт-Петербург</option>
+          <option value="ekb">Екатеринбург</option>
+          <option value="nsk">Новосибирск</option>
+          <option value="kzn">Казань</option>
+          <option value="nnov">Нижний Новгород</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Вес груза</label>
+      <div class="slider-value">
+        <span class="val" id="weight-val">12</span>
+        <span class="unit">кг</span>
+      </div>
+      <input type="range" id="weight" min="1" max="500" value="12" oninput="update()">
+      <div class="range-labels"><span>1 кг</span><span>500 кг</span></div>
+    </div>
+
+    <div class="field">
+      <label>Габариты (необязательно)</label>
+      <div class="dims">
+        <div><input type="number" class="dim-input" id="dim-l" placeholder="100" value="" oninput="update()"><div class="dim-label">Длина, см</div></div>
+        <div><input type="number" class="dim-input" id="dim-w" placeholder="60" value="" oninput="update()"><div class="dim-label">Ширина, см</div></div>
+        <div><input type="number" class="dim-input" id="dim-h" placeholder="40" value="" oninput="update()"><div class="dim-label">Высота, см</div></div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Тип доставки</label>
+      <div class="options" id="type-opt">
+        <div class="opt" data-mult="1" data-days="5-7" onclick="selectType(this)">
+          <div class="opt-icon">📦</div>
+          <div class="opt-name">Обычная</div>
+          <div class="opt-time">5-7 дней</div>
+        </div>
+        <div class="opt active" data-mult="1.8" data-days="2-3" onclick="selectType(this)">
+          <div class="opt-icon">⚡</div>
+          <div class="opt-name">Экспресс</div>
+          <div class="opt-time">2-3 дня</div>
+        </div>
+        <div class="opt" data-mult="0.7" data-days="7-14" onclick="selectType(this)">
+          <div class="opt-icon">🚛</div>
+          <div class="opt-name">Грузовая</div>
+          <div class="opt-time">7-14 дней</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Дополнительно</label>
+      <div class="toggles">
+        <div class="toggle" data-price="350" onclick="this.classList.toggle('active');update()">
+          <div><div class="toggle-label">Страховка груза</div><div class="toggle-price">+350 ₽</div></div>
+          <div class="toggle-check"></div>
+        </div>
+        <div class="toggle" data-price="500" onclick="this.classList.toggle('active');update()">
+          <div><div class="toggle-label">Упаковка (пузырчатая плёнка + короб)</div><div class="toggle-price">+500 ₽</div></div>
+          <div class="toggle-check"></div>
+        </div>
+        <div class="toggle" data-price="800" onclick="this.classList.toggle('active');update()">
+          <div><div class="toggle-label">Доставка до двери</div><div class="toggle-price">+800 ₽</div></div>
+          <div class="toggle-check"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="result">
+      <div class="result-label">Стоимость доставки</div>
+      <div class="result-price" id="total">0 <small>₽</small></div>
+      <div class="result-details">
+        <span><span class="rd-val" id="rd-dist">700 км</span>Расстояние</span>
+        <span><span class="rd-val" id="rd-days">2-3 дня</span>Срок</span>
+        <span><span class="rd-val" id="rd-weight">12 кг</span>Вес</span>
+      </div>
+    </div>
+
+    <button class="btn" onclick="this.textContent='✓ Заявка отправлена!';this.style.background='#16a34a';setTimeout(()=>{this.textContent='Оформить доставку';this.style.background=''},2500)">Оформить доставку</button>
+  </div>
+</div>
+
+<script>
+const DISTANCES={
+  'moscow-spb':700,'moscow-ekb':1800,'moscow-nsk':3400,'moscow-kzn':800,'moscow-nnov':420,
+  'spb-ekb':2500,'spb-nsk':4100,'spb-kzn':1500,'spb-nnov':1100,
+  'ekb-nsk':1600,'ekb-kzn':1000,'ekb-nnov':1300,
+  'nsk-kzn':2600,'nsk-nnov':3000,
+  'kzn-nnov':400
+};
+function getDist(a,b){
+  if(a===b)return 50;
+  const k1=a+'-'+b,k2=b+'-'+a;
+  return DISTANCES[k1]||DISTANCES[k2]||1000;
+}
+function fmt(n){return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,' ')}
+
+function selectType(el){
+  document.querySelectorAll('#type-opt .opt').forEach(o=>o.classList.remove('active'));
+  el.classList.add('active');
+  update();
+}
+
+function update(){
+  const from=document.getElementById('from').value;
+  const to=document.getElementById('to').value;
+  const weight=parseInt(document.getElementById('weight').value);
+  const dist=getDist(from,to);
+
+  const l=parseFloat(document.getElementById('dim-l').value)||0;
+  const w=parseFloat(document.getElementById('dim-w').value)||0;
+  const h=parseFloat(document.getElementById('dim-h').value)||0;
+  const volWeight=(l*w*h)/5000;
+  const billableWeight=Math.max(weight,volWeight);
+
+  const activeType=document.querySelector('#type-opt .opt.active');
+  const mult=parseFloat(activeType.dataset.mult);
+  const days=activeType.dataset.days;
+
+  const basePricePerKg=dist<500?25:dist<1500?18:dist<3000?14:12;
+  const base=Math.max(billableWeight*basePricePerKg,300);
+  const distFee=dist*1.2;
+  let delivery=Math.round((base+distFee)*mult);
+
+  let extras=0;
+  document.querySelectorAll('.toggle.active').forEach(t=>extras+=parseInt(t.dataset.price));
+
+  const total=delivery+extras;
+
+  document.getElementById('weight-val').textContent=weight;
+  document.getElementById('total').innerHTML=fmt(total)+' <small>₽</small>';
+  document.getElementById('rd-dist').textContent=fmt(dist)+' км';
+  document.getElementById('rd-days').textContent=days;
+  document.getElementById('rd-weight').textContent=(volWeight>weight?fmt(Math.round(volWeight))+' об.':weight)+' кг';
+}
+
+update();
+</script>
+</body>
+</html>
