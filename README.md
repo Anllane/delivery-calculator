@@ -8,7 +8,7 @@
 
 ## Демо
 
-**[Открыть калькулятор →](https://anlane.github.io/delivery-calculator/)**
+**[Открыть калькулятор →](https://Anllane.github.io/delivery-calculator/)**
 
 ## Возможности
 
